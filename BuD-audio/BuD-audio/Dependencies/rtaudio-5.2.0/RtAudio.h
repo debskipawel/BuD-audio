@@ -47,6 +47,7 @@
 #define __RTAUDIO_H
 
 #define RTAUDIO_VERSION "5.2.0"
+#define __WINDOWS_DS__
 
 #if defined _WIN32 || defined __CYGWIN__
   #if defined(RTAUDIO_EXPORT)
