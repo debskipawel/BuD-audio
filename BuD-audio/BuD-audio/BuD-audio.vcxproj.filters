@@ -45,6 +45,18 @@
     <ClInclude Include="include\AudioSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\AudioGallery.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SoundEffect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundFileDecoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mp3FileDecoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\rtaudio-5.2.0\RtAudio.cpp">
@@ -132,6 +144,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\AudioSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AudioGallery.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mp3FileDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundFileDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

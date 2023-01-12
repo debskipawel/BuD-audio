@@ -168,7 +168,11 @@
     <ClInclude Include="Dependencies\wavpack\src\wavpack_local.h" />
     <ClInclude Include="Dependencies\wavpack\src\wavpack_version.h" />
     <ClInclude Include="include\AudioDevice.h" />
+    <ClInclude Include="include\AudioGallery.h" />
     <ClInclude Include="include\AudioSystem.h" />
+    <ClInclude Include="include\SoundEffect.h" />
+    <ClInclude Include="src\Mp3FileDecoder.h" />
+    <ClInclude Include="src\SoundFileDecoder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\rtaudio-5.2.0\RtAudio.cpp" />
@@ -198,8 +202,12 @@
     <ClCompile Include="Dependencies\wavpack\src\unpack_seek.c" />
     <ClCompile Include="Dependencies\wavpack\src\unpack_utils.c" />
     <ClCompile Include="Dependencies\wavpack\src\write_words.c" />
+    <ClCompile Include="src\SoundEffect.cpp" />
+    <ClCompile Include="src\AudioGallery.cpp" />
     <ClCompile Include="src\AudioSystem.cpp" />
     <ClCompile Include="src\AudioDevice.cpp" />
+    <ClCompile Include="src\Mp3FileDecoder.cpp" />
+    <ClCompile Include="src\SoundFileDecoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\wavpack\src\pack_x64.asm" />

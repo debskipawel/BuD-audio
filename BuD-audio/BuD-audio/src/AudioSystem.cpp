@@ -1,4 +1,5 @@
 #include "AudioSystem.h"
+#include "AudioGallery.h"
 
 #include <rtaudio-5.2.0/RtAudio.h>
 
@@ -67,5 +68,14 @@ namespace BuD::Audio
 
 		s_Audio = nullptr;
 		s_ActiveDevice = AudioDevice::INVALID;
+	}
+	
+	std::shared_ptr<SoundEffect> AudioSystem::Load(std::filesystem::path filepath)
+	{
+		return AudioGallery::Load(filepath);
+	}
+	
+	void AudioSystem::Play(std::shared_ptr<SoundEffect> sound)
+	{
 	}
 }
