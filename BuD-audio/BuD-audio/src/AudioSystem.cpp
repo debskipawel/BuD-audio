@@ -22,15 +22,15 @@ namespace BuD::Audio
 			return status;
 		}
 
-		auto input = s_SoundBuffer.ReadFrame(nBufferFrames);
+		auto input = s_SoundBuffer.ReadFrame(2 * nBufferFrames);
 
 		// Playback
 		if (input.FramePtr)
 		{
-			memcpy(outBuffer, input.FramePtr, 2 * input.Size * sizeof(float));
+			memcpy(outBuffer, input.FramePtr, input.Size * sizeof(float));
 		}
 
-		memset(buffer + input.Size, 0, 2 * (nBufferFrames - input.Size) * sizeof(float));
+		memset(buffer + input.Size, 0, (2 * nBufferFrames - input.Size) * sizeof(float));
 
 		return 0;
 	}
