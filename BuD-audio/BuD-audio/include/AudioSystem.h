@@ -26,11 +26,13 @@ namespace BuD
 		private:
 			AudioSystem() = delete;
 
+			inline static const int BUFFER_SIZE = 512;
+
 			inline static AudioDevice s_ActiveDevice = AudioDevice::INVALID;
 			
 			inline static void* s_Audio = nullptr;
+			inline static std::vector<uint8_t> s_Buffer = std::vector<uint8_t>(BUFFER_SIZE);
 			inline static uint32_t s_SampleRate = -1;
-			inline static uint32_t s_FrameSize = -1;
 		};
 	}
 }

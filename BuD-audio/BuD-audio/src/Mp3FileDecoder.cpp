@@ -33,7 +33,7 @@ namespace BuD::Audio::Internal
 		std::free(info.buffer);
 
 		auto soundEffect = std::shared_ptr<SoundEffect>(
-			new SoundEffect(samples, sampleRate, channelCount, lengthInSeconds)
+			new SoundEffect(samples, sampleRate, info.samples, channelCount, lengthInSeconds)
 		);
 
 		return soundEffect;
