@@ -27,13 +27,10 @@ static int playbackHandle(void* outBuffer, void* inBuffer, uint32_t nBufferFrame
 	// Playback
 	if (input.FramePtr)
 	{
-		memcpy(outBuffer, input.FramePtr, input.Size * sizeof(float));
-		memset(buffer + input.Size, 0, nBufferFrames - input.Size);
+		memcpy(outBuffer, input.FramePtr, 2 * input.Size * sizeof(float));
 	}
-	else
-	{
-		memset(buffer, 0, nBufferFrames);
-	}
+
+	memset(buffer + input.Size, 0, 2 * (nBufferFrames - input.Size) * sizeof(float));
 
 	return 0;
 }

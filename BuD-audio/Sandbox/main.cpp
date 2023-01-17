@@ -7,7 +7,7 @@ int main()
 	auto device = BuD::Audio::AudioSystem::DefaultAudioDevice();
 	auto devices = BuD::Audio::AudioSystem::AllAudioDevices();
 	
-	BuD::Audio::AudioSystem::SetActiveDevice(devices[1]);
+	BuD::Audio::AudioSystem::SetActiveDevice(devices[0]);
 
 	std::filesystem::path radioheadPath = "..\\radiohead.mp3";
 
