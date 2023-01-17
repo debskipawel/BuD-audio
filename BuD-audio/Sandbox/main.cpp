@@ -9,7 +9,6 @@ int main()
 	
 	BuD::Audio::AudioSystem::SetActiveDevice(devices[1]);
 
-	std::filesystem::path homendaPath = "D:\\Prywatne\\Desktop\\homenda_powiadomienie.mp3";
 	std::filesystem::path radioheadPath = "..\\radiohead.mp3";
 
 	auto sound = BuD::Audio::AudioSystem::Load(radioheadPath);
