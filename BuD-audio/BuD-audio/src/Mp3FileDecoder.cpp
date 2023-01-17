@@ -27,7 +27,7 @@ namespace BuD::Audio::Internal
 		auto sampleRate = info.hz;
 		auto channelCount = info.channels;
 		auto lengthInSeconds = ((float)info.samples / channelCount) / sampleRate;
-		auto samples = std::vector<float>(sizeof(float) * info.samples);
+		auto samples = std::vector<float>(info.samples);
 		
 		memcpy(samples.data(), info.buffer, sizeof(float) * info.samples);
 		std::free(info.buffer);

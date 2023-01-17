@@ -1,25 +1,42 @@
 #include "AudioSystem.h"
+
 #include "AudioGallery.h"
+#include "SoundBuffer.h"
 
 #include <rtaudio-5.2.0/RtAudio.h>
 
+#include <iostream>
 #include <memory>
 
-static int rt_callback(void* output_buffer, void* input_buffer, uint32_t num_bufferframes, double stream_time, RtAudioStreamStatus status, void* user_data)
-{
-	constexpr int BUFFER_SIZE = 512;
+using namespace BuD::Audio::Internal;
 
-	if (status) std::cerr << "[rtaudio] buffer over or underflow" << std::endl;
+static SoundBuffer s_SoundBuffer;
+static constexpr size_t FRAME_SIZE = 256;
+
+static int playbackHandle(void* outBuffer, void* inBuffer, uint32_t nBufferFrames, double streamTime, RtAudioStreamStatus status, void* userData)
+{
+	auto buffer = static_cast<float*>(outBuffer);
+
+	if (status)
+	{
+		return status;
+	}
+
+	auto input = s_SoundBuffer.ReadFrame(nBufferFrames);
 
 	// Playback
-	if (!memcpy_s(output_buffer, BUFFER_SIZE * sizeof(float), (float*)user_data + num_bufferframes * BUFFER_SIZE * sizeof(float), BUFFER_SIZE * sizeof(float)))
+	if (input.FramePtr)
 	{
-		memset(output_buffer, 0, BUFFER_SIZE * sizeof(float));
+		memcpy(outBuffer, input.FramePtr, input.Size * sizeof(float));
+		memset(buffer + input.Size, 0, nBufferFrames - input.Size);
+	}
+	else
+	{
+		memset(buffer, 0, nBufferFrames);
 	}
 
 	return 0;
 }
-
 
 namespace BuD::Audio
 {
@@ -62,14 +79,9 @@ namespace BuD::Audio
 			s_Audio = new RtAudio;
 		}
 
-		auto audio = CastRTAudio();
-		
-		if (audio->isStreamOpen())
-		{
-			audio->closeStream();
-		}
-
 		s_ActiveDevice = device;
+
+		OpenStream();
 	}
 	
 	void AudioSystem::Clear()
@@ -80,6 +92,12 @@ namespace BuD::Audio
 		}
 
 		auto audio = CastRTAudio();
+
+		if (audio->isStreamOpen())
+		{
+			audio->closeStream();
+		}
+
 		delete audio;
 
 		s_Audio = nullptr;
@@ -93,38 +111,35 @@ namespace BuD::Audio
 	
 	void AudioSystem::Play(std::shared_ptr<SoundEffect> sound)
 	{
-		auto rtAudio = CastRTAudio();
-
-		if (!rtAudio)
+		if (!s_Audio || s_ActiveDevice == AudioDevice::INVALID)
 		{
+			std::cerr << "[ERROR] No default playback device has been set." << std::endl;
 			return;
 		}
-
-		unsigned int sizeInFrames = ((int)sound->m_Buffer.size()) / (BUFFER_SIZE);
 
 		if (s_SampleRate != sound->m_SampleRate)
 		{
 			s_SampleRate = sound->m_SampleRate;
 
-			RtAudio::StreamParameters outputParams;
-			outputParams.deviceId = s_ActiveDevice.Id();
-			outputParams.nChannels = s_ActiveDevice.NumChannels();
-			outputParams.firstChannel = 0;
-
-			if (rtAudio->isStreamOpen())
-			{
-				rtAudio->closeStream();
-			}
-			
-			rtAudio->openStream(&outputParams, nullptr, RTAUDIO_FLOAT32, sound->m_SampleRate, &sizeInFrames, &rt_callback, s_Buffer.data());
+			OpenStream();
 		}
 
-		errno_t res = 0;
+		s_SoundBuffer.Write(sound->m_Buffer.data(), sound->m_SampleCount, sound->m_SampleRate);
+	}
+	
+	void AudioSystem::OpenStream()
+	{
+		unsigned int frameSize = FRAME_SIZE;
+		RtAudio::StreamParameters outputParams{ s_ActiveDevice.Id(), s_ActiveDevice.NumChannels(), 0 };
 
-		// should be done on a new thread maybe?
-		for (int i = 0; i < sizeInFrames && res != 0; ++i)
+		auto rtAudio = CastRTAudio();
+
+		if (rtAudio->isStreamOpen())
 		{
-			res = memcpy_s(s_Buffer.data(), BUFFER_SIZE, sound->m_Buffer.data() + i * BUFFER_SIZE, BUFFER_SIZE);
+			rtAudio->closeStream();
 		}
+
+		rtAudio->openStream(&outputParams, nullptr, RTAUDIO_FLOAT32, s_SampleRate, &frameSize, &playbackHandle, nullptr);
+		rtAudio->startStream();
 	}
 }

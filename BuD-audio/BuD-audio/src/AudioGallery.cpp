@@ -13,6 +13,7 @@ namespace BuD::Audio
 	{
 		std::shared_ptr<Internal::SoundFileDecoder> decoder = nullptr;
 
+		auto filename = filepath.filename();
 		auto extension = filepath.extension();
 
 		if (extension == MP3_EXTENSION)

@@ -172,6 +172,7 @@
     <ClInclude Include="include\AudioSystem.h" />
     <ClInclude Include="include\SoundEffect.h" />
     <ClInclude Include="src\Mp3FileDecoder.h" />
+    <ClInclude Include="src\SoundBuffer.h" />
     <ClInclude Include="src\SoundFileDecoder.h" />
   </ItemGroup>
   <ItemGroup>
@@ -202,6 +203,7 @@
     <ClCompile Include="Dependencies\wavpack\src\unpack_seek.c" />
     <ClCompile Include="Dependencies\wavpack\src\unpack_utils.c" />
     <ClCompile Include="Dependencies\wavpack\src\write_words.c" />
+    <ClCompile Include="src\SoundBuffer.cpp" />
     <ClCompile Include="src\SoundEffect.cpp" />
     <ClCompile Include="src\AudioGallery.cpp" />
     <ClCompile Include="src\AudioSystem.cpp" />

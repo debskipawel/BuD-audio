@@ -17,6 +17,11 @@ namespace BuD
 			uint32_t Id() const { return m_Id; }
 			uint32_t NumChannels() const { return m_NumChannels; }
 
+			bool operator==(const AudioDevice& other)
+			{
+				return m_Id == other.m_Id;
+			}
+
 		protected:
 			std::string m_Name;
 
