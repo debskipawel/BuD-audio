@@ -29,8 +29,8 @@ namespace BuD
 			static void OpenStream();
 
 			inline static AudioDevice s_ActiveDevice = AudioDevice::INVALID;
-			
 			inline static void* s_Audio = nullptr;
+
 			inline static uint32_t s_SampleRate = 44100;
 		};
 	}

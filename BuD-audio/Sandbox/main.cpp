@@ -11,11 +11,18 @@ int main()
 
 	std::filesystem::path radioheadPath = "..\\radiohead.mp3";
 
+	std::cout << "Loading file \"" + radioheadPath.filename().string() << "\"" << std::endl;
 	auto sound = BuD::Audio::AudioSystem::Load(radioheadPath);
-	BuD::Audio::AudioSystem::Play(sound);
 
-	char input;
-	std::cin.get(input);
+	if (sound)
+	{
+		std::cout << "File loaded successfully. Starting playback." << std::endl << std::endl;
+		BuD::Audio::AudioSystem::Play(sound);
+
+		char input;
+		std::cout << "Playback in progress. Press ENTER to exit. ";
+		std::cin.get(input);
+	}
 
 	BuD::Audio::AudioSystem::Clear();
 

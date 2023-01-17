@@ -8,35 +8,33 @@
 #include <iostream>
 #include <memory>
 
-using namespace BuD::Audio::Internal;
-
-static SoundBuffer s_SoundBuffer;
-static constexpr size_t FRAME_SIZE = 256;
-
-static int playbackHandle(void* outBuffer, void* inBuffer, uint32_t nBufferFrames, double streamTime, RtAudioStreamStatus status, void* userData)
-{
-	auto buffer = static_cast<float*>(outBuffer);
-
-	if (status)
-	{
-		return status;
-	}
-
-	auto input = s_SoundBuffer.ReadFrame(nBufferFrames);
-
-	// Playback
-	if (input.FramePtr)
-	{
-		memcpy(outBuffer, input.FramePtr, 2 * input.Size * sizeof(float));
-	}
-
-	memset(buffer + input.Size, 0, 2 * (nBufferFrames - input.Size) * sizeof(float));
-
-	return 0;
-}
-
 namespace BuD::Audio
 {
+	static Internal::SoundBuffer s_SoundBuffer;
+	static constexpr size_t FRAME_SIZE = 256;
+
+	static int playbackHandle(void* outBuffer, void* inBuffer, uint32_t nBufferFrames, double streamTime, RtAudioStreamStatus status, void* userData)
+	{
+		auto buffer = static_cast<float*>(outBuffer);
+
+		if (status)
+		{
+			return status;
+		}
+
+		auto input = s_SoundBuffer.ReadFrame(nBufferFrames);
+
+		// Playback
+		if (input.FramePtr)
+		{
+			memcpy(outBuffer, input.FramePtr, 2 * input.Size * sizeof(float));
+		}
+
+		memset(buffer + input.Size, 0, 2 * (nBufferFrames - input.Size) * sizeof(float));
+
+		return 0;
+	}
+
 	#define CastRTAudio() reinterpret_cast<RtAudio*>(s_Audio)
 
 	std::vector<AudioDevice> AudioSystem::AllAudioDevices()

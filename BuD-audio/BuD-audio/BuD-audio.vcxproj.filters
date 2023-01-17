@@ -45,7 +45,7 @@
     <ClInclude Include="include\AudioSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\AudioGallery.h">
+    <ClInclude Include="src\AudioGallery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\SoundEffect.h">
