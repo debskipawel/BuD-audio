@@ -36,14 +36,14 @@
 
 #ifdef OPT_ASM_X86
     #define PACK_DECORR_MONO_PASS_CONT pack_decorr_mono_pass_cont_x86
-#elif defined(OPT_ASM_X64) && (defined (_WIN64) || defined(__CYGWIN__) || defined(__MINGW64__))
+#elif defined(OPT_ASM_X64) && (defined (_WIN64) || defined(__CYGWIN__) || defined(__MINGW64__) || defined(__midipix__))
     #define PACK_DECORR_MONO_PASS_CONT pack_decorr_mono_pass_cont_x64win
 #elif defined(OPT_ASM_X64)
     #define PACK_DECORR_MONO_PASS_CONT pack_decorr_mono_pass_cont_x64
 #endif
 
 #ifdef PACK_DECORR_MONO_PASS_CONT
-    void PACK_DECORR_MONO_PASS_CONT (int32_t *out_buffer, int32_t *in_buffer,  struct decorr_pass *dpp, int32_t sample_count);
+    void ASMCALL PACK_DECORR_MONO_PASS_CONT (int32_t *out_buffer, int32_t *in_buffer,  struct decorr_pass *dpp, int32_t sample_count);
 #endif
 
 typedef struct {
@@ -234,7 +234,7 @@ static void recurse_mono (WavpackContext *wpc, WavpackExtraInfo *info, int depth
     if (branches < 1 || depth + 1 == info->nterms)
         branches = 1;
 
-    CLEAR (term_bits);
+    CLEARA (term_bits);
     samples = info->sampleptrs [depth];
     outsamples = info->sampleptrs [depth + 1];
 
@@ -553,7 +553,7 @@ void execute_mono (WavpackContext *wpc, int32_t *samples, int no_history, int do
     log_limit = 0;
 #endif
 
-    CLEAR (save_decorr_passes);
+    CLEARA (save_decorr_passes);
     temp_buffer [0] = malloc (buf_size);
     temp_buffer [1] = malloc (buf_size);
     best_buffer = malloc (buf_size);
@@ -608,7 +608,7 @@ void execute_mono (WavpackContext *wpc, int32_t *samples, int no_history, int do
 
         while (1) {
         memcpy (temp_buffer [0], noisy_buffer ? noisy_buffer : samples, buf_size);
-        CLEAR (save_decorr_passes);
+        CLEARA (save_decorr_passes);
 
         for (j = 0; j < nterms; ++j) {
             CLEAR (temp_decorr_pass);

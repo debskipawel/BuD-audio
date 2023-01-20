@@ -60,6 +60,9 @@
     <ClInclude Include="src\SoundBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\FlacFileDecoder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\rtaudio-5.2.0\RtAudio.cpp">
@@ -162,6 +165,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SoundBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WavpackFileDecoder.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WavpackFileDecoder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

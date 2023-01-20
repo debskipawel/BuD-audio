@@ -16,7 +16,7 @@ namespace BuD::Audio
 		class SoundBuffer
 		{
 		public:
-			SoundBuffer() = default;
+			SoundBuffer() : m_Buffer(), m_ReadEnd(0), m_WriteEnd(0) {}
 			~SoundBuffer() = default;
 
 			Frame ReadFrame(size_t frameSize);

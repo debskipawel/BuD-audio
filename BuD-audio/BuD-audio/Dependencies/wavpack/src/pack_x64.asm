@@ -39,7 +39,7 @@ asmcode segment page 'CODE'
 ; decorr_pass structure contains separate arrays for each channel while the
 ; MMX code wants there to be a single array of dual samples. The fix for
 ; this is to convert the data in the arrays on entry and exit, and this is
-; made easy by the fact that the 8 MMX regsiters hold exactly the required
+; made easy by the fact that the 8 MMX registers hold exactly the required
 ; amount of data (64 bytes)!
 ;
 ; This is written to work on an X86-64 processor (also called the AMD64)
@@ -55,7 +55,7 @@ asmcode segment page 'CODE'
 ;
 ;   rdi         buffer pointer
 ;   rsi         termination buffer pointer
-;   rax,rbx,rdx used in default term to reduce calculation         
+;   rax,rbx,rdx used in default term to reduce calculation
 ;   rbp         decorr_pass pointer
 ;   mm0, mm1    scratch
 ;   mm2         original sample values
@@ -489,7 +489,7 @@ pack_decorr_stereo_pass_x64win endp
 ;   int32_t *out_buffer,
 ;   int32_t sample_count);
 ;
-; It performs a single pass of stereo decorrelation, transfering from the
+; It performs a single pass of stereo decorrelation, transferring from the
 ; input buffer to the output buffer. Note that this version of the function
 ; requires that the up to 8 previous (depending on dpp->term) stereo samples
 ; are visible and correct. In other words, it ignores the "samples_*"
@@ -955,7 +955,7 @@ pack_decorr_stereo_pass_cont_common endp
 ; they are to be used somewhere else. The magnitude of the output samples is
 ; accumulated and returned (see scan_max_magnitude() for more details). By
 ; using the overflow detection of the multiply instruction, this detects
-; when the "long_math" varient is required.
+; when the "long_math" variant is required.
 ;
 ; For the fastest possible operation with the four "common" decorrelation
 ; filters (i.e, fast, normal, high and very high) this function can be
@@ -1309,7 +1309,7 @@ nxterm: mov     edx, [rbp]
 domult: mov     eax, [rbp+8]
         mov     edx, eax
         imul    eax, ebx
-        jo      multov                      ; on overflow, jump to use 64-bit imul varient
+        jo      multov                      ; on overflow, jump to use 64-bit imul variant
         sar     eax, 10
         sbb     ecx, eax
         je      @f
@@ -1387,7 +1387,7 @@ pack_decorr_mono_buffer_x64win endp
 ;                             struct decorr_pass *dpp,
 ;                             int32_t sample_count);
 ;
-; It performs a single pass of mono decorrelation, transfering from the
+; It performs a single pass of mono decorrelation, transferring from the
 ; input buffer to the output buffer. Note that this version of the function
 ; requires that the up to 8 previous (depending on dpp->term) mono samples
 ; are visible and correct. In other words, it ignores the "samples_*"
@@ -1396,7 +1396,7 @@ pack_decorr_mono_buffer_x64win endp
 ; samples to the decorr_pass structure before returning.
 ;
 ; By using the overflow detection of the multiply instruction, it detects
-; when the "long_math" varient is required and automatically does it.
+; when the "long_math" variant is required and automatically does it.
 ;
 ; This is written to work on an X86-64 processor (also called the AMD64)
 ; running in 64-bit mode. This version is for the 64-bit Windows ABI and
@@ -1797,9 +1797,9 @@ limit_loop:
         bsr     ecx, edx                    ; ecx = MSB set in sample (0 - 31)
         lea     eax, [ecx+1]                ; eax = number used bits in sample (1 - 32)
         sub     ecx, 8                      ; ecx = shift right amount (-8 to 23)
-        ror     edx, cl                     ; use rotate to do "signed" shift 
+        ror     edx, cl                     ; use rotate to do "signed" shift
         sal     eax, 8                      ; move nbits to integer portion of log
-        movzx   edx, dl                     ; dl = mantissa, look up log fraction in table 
+        movzx   edx, dl                     ; dl = mantissa, look up log fraction in table
         mov     al, [r8+rdx]                ; eax = combined integer and fraction for full log
         add     edi, eax                    ; add to running sum and compare to limit
         cmp     eax, ebp
@@ -1823,9 +1823,9 @@ no_limit_loop:
         bsr     ecx, edx                    ; ecx = MSB set in sample (0 - 31)
         lea     eax, [ecx+1]                ; eax = number used bits in sample (1 - 32)
         sub     ecx, 8                      ; ecx = shift right amount (-8 to 23)
-        ror     edx, cl                     ; use rotate to do "signed" shift 
+        ror     edx, cl                     ; use rotate to do "signed" shift
         sal     eax, 8                      ; move nbits to integer portion of log
-        movzx   edx, dl                     ; dl = mantissa, look up log fraction in table 
+        movzx   edx, dl                     ; dl = mantissa, look up log fraction in table
         mov     al, [r8+rdx]                ; eax = combined integer and fraction for full log
         add     edi, eax                    ; add to running sum
 L45:    sub     ebx, 1

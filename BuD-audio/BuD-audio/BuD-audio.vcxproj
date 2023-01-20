@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>bud_audio_pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\wavpack\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -101,7 +101,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>bud_audio_pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\wavpack\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -123,7 +123,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>bud_audio_pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\wavpack\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -145,7 +145,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>bud_audio_pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)Dependencies;$(ProjectDir)Dependencies\wavpack\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -171,6 +171,7 @@
     <ClInclude Include="src\AudioGallery.h" />
     <ClInclude Include="include\AudioSystem.h" />
     <ClInclude Include="include\SoundEffect.h" />
+    <ClInclude Include="src\FlacFileDecoder.h" />
     <ClInclude Include="src\Mp3FileDecoder.h" />
     <ClInclude Include="src\SoundBuffer.h" />
     <ClInclude Include="src\SoundFileDecoder.h" />
@@ -210,6 +211,8 @@
     <ClCompile Include="src\AudioDevice.cpp" />
     <ClCompile Include="src\Mp3FileDecoder.cpp" />
     <ClCompile Include="src\SoundFileDecoder.cpp" />
+    <ClCompile Include="src\WavpackFileDecoder.cpp" />
+    <ClCompile Include="src\WavpackFileDecoder.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dependencies\wavpack\src\pack_x64.asm" />

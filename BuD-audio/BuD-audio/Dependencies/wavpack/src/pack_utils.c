@@ -130,7 +130,7 @@ void WavpackSetFileInformation (WavpackContext *wpc, char *file_extension, unsig
 //
 // The identities are provided in a NULL-terminated string (0x00 is not an allowed
 // channel ID). The Microsoft channels may be provided as well (and will be checked)
-// but it is really only neccessary to provide the "unknown" channels. Any truly
+// but it is really only necessary to provide the "unknown" channels. Any truly
 // unknown channels are indicated with a 0xFF.
 //
 // The channel IDs so far reserved are listed here:
@@ -195,6 +195,26 @@ int WavpackSetConfiguration64 (WavpackContext *wpc, WavpackConfig *config, int64
     int num_chans = config->num_channels;
     int i;
 
+    if (config->sample_rate <= 0) {
+        strcpy (wpc->error_message, "sample rate cannot be zero or negative!");
+        return FALSE;
+    }
+
+    if (!total_samples || total_samples > MAX_WAVPACK_SAMPLES || total_samples < -1) {
+        strcpy (wpc->error_message, "invalid total sample count!");
+        return FALSE;
+    }
+
+    if (num_chans <= 0 || num_chans > WAVPACK_MAX_CHANS) {
+        strcpy (wpc->error_message, "invalid channel count!");
+        return FALSE;
+    }
+
+    if (config->block_samples && (config->block_samples < 16 || config->block_samples > 131072)) {
+        strcpy (wpc->error_message, "invalid custom block samples!");
+        return FALSE;
+    }
+
     wpc->stream_version = (config->flags & CONFIG_COMPATIBLE_WRITE) ? CUR_STREAM_VERS : MAX_STREAM_VERS;
 
     if ((config->qmode & QMODE_DSD_AUDIO) && config->bytes_per_sample == 1 && config->bits_per_sample == 8) {
@@ -253,12 +273,28 @@ int WavpackSetConfiguration64 (WavpackContext *wpc, WavpackConfig *config, int64
 
     if (!(flags & DSD_FLAG)) {
         if (config->float_norm_exp) {
+            if (config->bytes_per_sample != 4 || config->bits_per_sample != 32) {
+                strcpy (wpc->error_message, "incorrect bits/bytes configuration for float data!");
+                return FALSE;
+            }
+
             wpc->config.float_norm_exp = config->float_norm_exp;
             wpc->config.flags |= CONFIG_FLOAT_DATA;
             flags |= FLOAT_DATA;
         }
-        else
+        else {
+            if (config->bytes_per_sample < 1 || config->bytes_per_sample > 4) {
+                strcpy (wpc->error_message, "invalid bytes per sample!");
+                return FALSE;
+            }
+
+            if (config->bits_per_sample < 1 || config->bits_per_sample > config->bytes_per_sample * 8) {
+                strcpy (wpc->error_message, "invalid bits per sample!");
+                return FALSE;
+            }
+
             flags |= ((config->bytes_per_sample * 8) - config->bits_per_sample) << SHIFT_LSB;
+        }
 
         if (config->flags & CONFIG_HYBRID_FLAG) {
             flags |= HYBRID_FLAG | HYBRID_BITRATE | HYBRID_BALANCE;
@@ -308,8 +344,8 @@ int WavpackSetConfiguration64 (WavpackContext *wpc, WavpackConfig *config, int64
         // skip past channels that are specified in the channel mask (no reason to store those)
 
         while (*chan_ids)
-            if (*chan_ids <= 32 && *chan_ids > lastchan && (mask_copy & (1 << (*chan_ids-1)))) {
-                mask_copy &= ~(1 << (*chan_ids-1));
+            if (*chan_ids <= 32 && *chan_ids > lastchan && (mask_copy & (1U << (*chan_ids-1)))) {
+                mask_copy &= ~(1U << (*chan_ids-1));
                 lastchan = *chan_ids++;
             }
             else
@@ -341,13 +377,13 @@ int WavpackSetConfiguration64 (WavpackContext *wpc, WavpackConfig *config, int64
         // if there are any bits [still] set in the channel_mask, get the next one or two IDs from there
         if (chan_mask)
             for (pos = 0; pos < 32; ++pos)
-                if (chan_mask & (1 << pos)) {
+                if (chan_mask & (1U << pos)) {
                     if (left_chan_id) {
                         right_chan_id = pos + 1;
                         break;
                     }
                     else {
-                        chan_mask &= ~(1 << pos);
+                        chan_mask &= ~(1U << pos);
                         left_chan_id = pos + 1;
                     }
                 }
@@ -375,8 +411,8 @@ int WavpackSetConfiguration64 (WavpackContext *wpc, WavpackConfig *config, int64
                 for (i = 0; i < NUM_STEREO_PAIRS; ++i)
                     if ((left_chan_id == stereo_pairs [i].a && right_chan_id == stereo_pairs [i].b) ||
                         (left_chan_id == stereo_pairs [i].b && right_chan_id == stereo_pairs [i].a)) {
-                            if (right_chan_id <= 32 && (chan_mask & (1 << (right_chan_id-1))))
-                                chan_mask &= ~(1 << (right_chan_id-1));
+                            if (right_chan_id <= 32 && (chan_mask & (1U << (right_chan_id-1))))
+                                chan_mask &= ~(1U << (right_chan_id-1));
                             else if (chan_ids && *chan_ids == right_chan_id)
                                 chan_ids++;
 
@@ -497,7 +533,7 @@ int WavpackPackInit (WavpackContext *wpc)
         if (wpc->config.num_channels == 1)
             wpc->block_samples *= 2;
 
-        while (wpc->block_samples > 12000 && wpc->block_samples * wpc->config.num_channels > 300000)
+        while (wpc->block_samples > 12000 && (int64_t) wpc->block_samples * wpc->config.num_channels > 300000)
             wpc->block_samples /= 2;
     }
     else {
@@ -508,10 +544,10 @@ int WavpackPackInit (WavpackContext *wpc)
 
         wpc->block_samples = wpc->config.sample_rate / divisor;
 
-        while (wpc->block_samples > 12000 && wpc->block_samples * wpc->config.num_channels > 75000)
+        while (wpc->block_samples > 12000 && (int64_t) wpc->block_samples * wpc->config.num_channels > 75000)
             wpc->block_samples /= 2;
 
-        while (wpc->block_samples * wpc->config.num_channels < 20000)
+        while ((int64_t) wpc->block_samples * wpc->config.num_channels < 20000)
             wpc->block_samples *= 2;
     }
 
@@ -614,7 +650,7 @@ int WavpackPackSamples (WavpackContext *wpc, int32_t *sample_buffer, uint32_t sa
 
                     case 3:
                         while (cnt--) {
-                            *dptr++ = (*sptr << 8) >> 8;
+                            *dptr++ = (int32_t)((uint32_t)*sptr << 8) >> 8;
                             sptr += nch;
                         }
 
@@ -651,8 +687,8 @@ int WavpackPackSamples (WavpackContext *wpc, int32_t *sample_buffer, uint32_t sa
 
                     case 3:
                         while (cnt--) {
-                            *dptr++ = (sptr [0] << 8) >> 8;
-                            *dptr++ = (sptr [1] << 8) >> 8;
+                            *dptr++ = (int32_t)((uint32_t)sptr [0] << 8) >> 8;
+                            *dptr++ = (int32_t)((uint32_t)sptr [1] << 8) >> 8;
                             sptr += nch;
                         }
 
@@ -837,24 +873,24 @@ static int create_riff_header (WavpackContext *wpc, int64_t total_samples, void 
         wavhdr.GUID [13] = 0x71;
     }
 
-    strncpy (riffhdr.ckID, do_rf64 ? "RF64" : "RIFF", sizeof (riffhdr.ckID));
-    strncpy (riffhdr.formType, "WAVE", sizeof (riffhdr.formType));
+    memcpy (riffhdr.ckID, do_rf64 ? "RF64" : "RIFF", sizeof (riffhdr.ckID));
+    memcpy (riffhdr.formType, "WAVE", sizeof (riffhdr.formType));
     total_riff_bytes = sizeof (riffhdr) + wavhdrsize + sizeof (datahdr) + total_data_bytes + wpc->riff_trailer_bytes;
     if (do_rf64) total_riff_bytes += sizeof (ds64hdr) + sizeof (ds64_chunk);
     if (write_junk) total_riff_bytes += sizeof (junkchunk);
-    strncpy (fmthdr.ckID, "fmt ", sizeof (fmthdr.ckID));
-    strncpy (datahdr.ckID, "data", sizeof (datahdr.ckID));
+    memcpy (fmthdr.ckID, "fmt ", sizeof (fmthdr.ckID));
+    memcpy (datahdr.ckID, "data", sizeof (datahdr.ckID));
     fmthdr.ckSize = wavhdrsize;
 
     if (write_junk) {
         CLEAR (junkchunk);
-        strncpy (junkchunk.ckID, "junk", sizeof (junkchunk.ckID));
+        memcpy (junkchunk.ckID, "junk", sizeof (junkchunk.ckID));
         junkchunk.ckSize = sizeof (junkchunk) - 8;
         WavpackNativeToLittleEndian (&junkchunk, ChunkHeaderFormat);
     }
 
     if (do_rf64) {
-        strncpy (ds64hdr.ckID, "ds64", sizeof (ds64hdr.ckID));
+        memcpy (ds64hdr.ckID, "ds64", sizeof (ds64hdr.ckID));
         ds64hdr.ckSize = sizeof (ds64_chunk);
         CLEAR (ds64_chunk);
         ds64_chunk.riffSize64 = total_riff_bytes;
@@ -922,9 +958,10 @@ static int pack_streams (WavpackContext *wpc, uint32_t block_samples)
         max_blocksize += max_blocksize >> 2;    // otherwise 25% margin for everything else
 
     max_blocksize += wpc->metabytes + 1024;     // finally, add metadata & another 1K margin
+    max_blocksize += max_blocksize & 1;         // and make sure it's even so we detect overflow
 
     out2buff = (wpc->wvc_flag) ? malloc (max_blocksize) : NULL;
-    out2end = out2buff + max_blocksize;
+    out2end = (wpc->wvc_flag) ? out2buff + max_blocksize : NULL;
     outbuff = malloc (max_blocksize);
     outend = outbuff + max_blocksize;
 
@@ -933,7 +970,7 @@ static int pack_streams (WavpackContext *wpc, uint32_t block_samples)
         uint32_t flags = wps->wphdr.flags;
 
         flags &= ~MAG_MASK;
-        flags += (1 << MAG_LSB) * ((flags & BYTES_STORED) * 8 + 7);
+        flags += (1U << MAG_LSB) * ((flags & BYTES_STORED) * 8 + 7);
 
         SET_BLOCK_INDEX (wps->wphdr, wps->sample_index);
         wps->wphdr.block_samples = block_samples;
@@ -1020,9 +1057,6 @@ void WavpackUpdateNumSamples (WavpackContext *wpc, void *first_block)
 {
     uint32_t wrapper_size;
 
-    WavpackLittleEndianToNative (first_block, WavpackHeaderFormat);
-    SET_TOTAL_SAMPLES (* (WavpackHeader *) first_block, WavpackGetSampleIndex64 (wpc));
-
     if (wpc->riff_header_created && WavpackGetWrapperLocation (first_block, &wrapper_size)) {
         unsigned char riff_header [128];
 
@@ -1030,6 +1064,8 @@ void WavpackUpdateNumSamples (WavpackContext *wpc, void *first_block)
             memcpy (WavpackGetWrapperLocation (first_block, NULL), riff_header, wrapper_size);
     }
 
+    WavpackLittleEndianToNative (first_block, WavpackHeaderFormat);
+    SET_TOTAL_SAMPLES (* (WavpackHeader *) first_block, WavpackGetSampleIndex64 (wpc));
     block_update_checksum (first_block);
     WavpackNativeToLittleEndian (first_block, WavpackHeaderFormat);
 }

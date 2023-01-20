@@ -1,12 +1,13 @@
 #include "AudioGallery.h"
 
-#include "SoundFileDecoder.h"
+#include "WavpackFileDecoder.h"
 #include "Mp3FileDecoder.h"
 
 namespace BuD::Audio
 {
 	std::filesystem::path MP3_EXTENSION = ".mp3";
 	std::filesystem::path WAV_EXTENSION = ".wav";
+	std::filesystem::path WAVPACK_EXTENSION = ".wv";
 	std::filesystem::path FLAC_EXTENSION = ".flac";
 
 	std::shared_ptr<SoundEffect> AudioGallery::Load(std::filesystem::path filepath)
@@ -19,6 +20,10 @@ namespace BuD::Audio
 		if (extension == MP3_EXTENSION)
 		{
 			decoder = std::shared_ptr<Internal::SoundFileDecoder>(new Internal::Mp3FileDecoder);
+		}
+		else if (extension == WAVPACK_EXTENSION)
+		{
+			decoder = std::shared_ptr<Internal::SoundFileDecoder>(new Internal::WavpackFileDecoder);
 		}
 
 		auto soundFile = decoder->LoadFromPath(filepath);

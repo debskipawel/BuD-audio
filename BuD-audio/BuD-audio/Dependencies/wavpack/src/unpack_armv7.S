@@ -1,7 +1,7 @@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@                           **** WAVPACK ****                            @@
 @@                  Hybrid Lossless Wavefile Compressor                   @@
-@@              Copyright (c) 1998 - 2015 Conifer Software.               @@
+@@                Copyright (c) 1998 - 2019 David Bryant.                 @@
 @@                          All Rights Reserved.                          @@
 @@      Distributed under the BSD Software License (see license.txt)      @@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -32,7 +32,7 @@
  * SSAT is not universally available (although on the armv7 I'm testing on
  * it is slightly faster than the shifts).
  *
- * A mono version follows below. 
+ * A mono version follows below.
  */
 
 /*
@@ -43,6 +43,9 @@
  * r2 = int32_t sample_count
  * r3 = int32_t long_math
  */
+
+        .arm
+        .type           unpack_decorr_stereo_pass_cont_armv7, STT_FUNC
 
 unpack_decorr_stereo_pass_cont_armv7:
 
@@ -648,6 +651,9 @@ common_exit:
  * r2 = int32_t sample_count
  * r3 = int32_t long_math
  */
+
+        .arm
+        .type           unpack_decorr_mono_pass_cont_armv7, STT_FUNC
 
 unpack_decorr_mono_pass_cont_armv7:
 

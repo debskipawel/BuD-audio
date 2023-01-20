@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////
 //                           **** WAVPACK ****                            //
 //                  Hybrid Lossless Wavefile Compressor                   //
-//                Copyright (c) 1998 - 2016 David Bryant.                 //
+//                Copyright (c) 1998 - 2019 David Bryant.                 //
 //                          All Rights Reserved.                          //
 //      Distributed under the BSD Software License (see license.txt)      //
 ////////////////////////////////////////////////////////////////////////////
@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "wavpack_local.h"
 
@@ -175,6 +176,11 @@ WavpackContext *WavpackOpenFileInputEx64 (WavpackStreamReader64 *reader, void *w
                 "not compatible with this version of WavPack file!");
 
             return WavpackCloseFile (wpc);
+        }
+
+        if (!wps->wphdr.block_samples) {    // free blockbuff if we're going to loop again
+            free (wps->blockbuff);
+            wps->blockbuff = NULL;
         }
 
         wps->init_done = TRUE;
@@ -353,12 +359,12 @@ int unpack_init (WavpackContext *wpc)
     return TRUE;
 }
 
-//////////////////////////////// matadata handlers ///////////////////////////////
+//////////////////////////////// metadata handlers ///////////////////////////////
 
 // These functions handle specific metadata types and are called directly
 // during WavPack block parsing by process_metadata() at the bottom.
 
-// This function initialzes the main bitstream for audio samples, which must
+// This function initializes the main bitstream for audio samples, which must
 // be in the "wv" file.
 
 static int init_wv_bitstream (WavpackStream *wps, WavpackMetadata *wpmd)
@@ -370,7 +376,7 @@ static int init_wv_bitstream (WavpackStream *wps, WavpackMetadata *wpmd)
     return TRUE;
 }
 
-// This function initialzes the "correction" bitstream for audio samples,
+// This function initializes the "correction" bitstream for audio samples,
 // which currently must be in the "wvc" file.
 
 static int init_wvc_bitstream (WavpackStream *wps, WavpackMetadata *wpmd)
@@ -382,7 +388,7 @@ static int init_wvc_bitstream (WavpackStream *wps, WavpackMetadata *wpmd)
     return TRUE;
 }
 
-// This function initialzes the "extra" bitstream for audio samples which
+// This function initializes the "extra" bitstream for audio samples which
 // contains the information required to losslessly decompress 32-bit float data
 // or integer data that exceeds 24 bits. This bitstream is in the "wv" file
 // for pure lossless data or the "wvc" file for hybrid lossless. This data
@@ -397,9 +403,9 @@ static int init_wvx_bitstream (WavpackStream *wps, WavpackMetadata *wpmd)
         return FALSE;
 
     wps->crc_wvx = *cp++;
-    wps->crc_wvx |= (int32_t) *cp++ << 8;
-    wps->crc_wvx |= (int32_t) *cp++ << 16;
-    wps->crc_wvx |= (int32_t) *cp++ << 24;
+    wps->crc_wvx |= (uint32_t) *cp++ << 8;
+    wps->crc_wvx |= (uint32_t) *cp++ << 16;
+    wps->crc_wvx |= (uint32_t) *cp++ << 24;
 
     bs_open_read (&wps->wvxbits, cp, (unsigned char *) wpmd->data + wpmd->byte_length);
     return TRUE;
@@ -463,7 +469,7 @@ static int read_channel_info (WavpackContext *wpc, WavpackMetadata *wpmd)
 
             if (wpc->config.num_channels < wpc->max_streams)
                 return FALSE;
-    
+
             byteptr += 3;
             mask = *byteptr++;
             mask |= (uint32_t) *byteptr++ << 8;
@@ -502,6 +508,16 @@ static int read_channel_info (WavpackContext *wpc, WavpackMetadata *wpmd)
 
 static int read_channel_identities (WavpackContext *wpc, WavpackMetadata *wpmd)
 {
+    unsigned char *idents = wpmd->data;
+    int i;
+
+    if (!wpmd->data || !wpmd->byte_length)
+        return FALSE;
+
+    for (i = 0; i < wpmd->byte_length; ++i)
+        if (!idents [i])
+            return FALSE;
+
     if (!wpc->channel_identities) {
         wpc->channel_identities = (unsigned char *)malloc (wpmd->byte_length + 1);
         memcpy (wpc->channel_identities, wpmd->data, wpmd->byte_length);
@@ -520,9 +536,9 @@ static int read_config_info (WavpackContext *wpc, WavpackMetadata *wpmd)
 
     if (bytecnt >= 3) {
         wpc->config.flags &= 0xff;
-        wpc->config.flags |= (int32_t) *byteptr++ << 8;
-        wpc->config.flags |= (int32_t) *byteptr++ << 16;
-        wpc->config.flags |= (int32_t) *byteptr++ << 24;
+        wpc->config.flags |= (uint32_t) *byteptr++ << 8;
+        wpc->config.flags |= (uint32_t) *byteptr++ << 16;
+        wpc->config.flags |= (uint32_t) *byteptr++ << 24;
         bytecnt -= 3;
 
         if (bytecnt && (wpc->config.flags & CONFIG_EXTRA_MODE)) {
@@ -570,7 +586,7 @@ static int read_new_config_info (WavpackContext *wpc, WavpackMetadata *wpmd)
         if (bytecnt) {
             int nchans, i;
 
-            wpc->channel_layout = (int32_t) *byteptr++ << 16;
+            wpc->channel_layout = (uint32_t) *byteptr++ << 16;
             bytecnt--;
 
             // another byte means we have a channel count for the layout and maybe a reordering
@@ -781,8 +797,13 @@ static int process_metadata (WavpackContext *wpc, WavpackMetadata *wpmd)
 
         case ID_ALT_EXTENSION:
             if (wpmd->byte_length && wpmd->byte_length < sizeof (wpc->file_extension)) {
-                memcpy (wpc->file_extension, wpmd->data, wpmd->byte_length);
-                wpc->file_extension [wpmd->byte_length] = 0;
+                int i, j;
+
+                for (i = j = 0; i < wpmd->byte_length; ++i)
+                    if (isalnum (((char *) wpmd->data) [i]))
+                        wpc->file_extension [j++] = ((char *) wpmd->data) [i];
+
+                wpc->file_extension [j] = 0;
             }
 
             return TRUE;
@@ -808,13 +829,13 @@ static void bs_read (Bitstream *bs);
 static void bs_open_read (Bitstream *bs, void *buffer_start, void *buffer_end)
 {
     bs->error = bs->sr = bs->bc = 0;
-    bs->ptr = ((bs->buf = (uint16_t *)buffer_start) - 1);
-    bs->end = (uint16_t *)buffer_end;
+    bs->ptr = (bs->buf = buffer_start) - 1;
+    bs->end = buffer_end;
     bs->wrap = bs_read;
 }
 
 // This function is only called from the getbit() and getbits() macros when
-// the BitStream has been exhausted and more data is required. Sinve these
+// the BitStream has been exhausted and more data is required. Since these
 // bistreams no longer access files, this function simple sets an error and
 // resets the buffer.
 
@@ -949,7 +970,7 @@ static int match_wvc_header (WavpackHeader *wv_hdr, WavpackHeader *wvc_hdr)
             return (wvci - wvi < 0) ? 1 : -1;
         }
 
-    if (((GET_BLOCK_INDEX (*wvc_hdr) - GET_BLOCK_INDEX (*wv_hdr)) << 24) < 0)
+    if ((GET_BLOCK_INDEX (*wvc_hdr) - GET_BLOCK_INDEX (*wv_hdr)) & 0x8000000000LL)
         return 1;
     else
         return -1;
@@ -1258,13 +1279,13 @@ int WavpackVerifySingleBlock (unsigned char *buffer, int verify_checksum)
 #endif
 
             if (meta_bc == 4) {
-                if (*dp++ != (csum & 0xff) || *dp++ != ((csum >> 8) & 0xff) || *dp++ != ((csum >> 16) & 0xff) || *dp++ != ((csum >> 24) & 0xff))
+                if (*dp != (csum & 0xff) || dp[1] != ((csum >> 8) & 0xff) || dp[2] != ((csum >> 16) & 0xff) || dp[3] != ((csum >> 24) & 0xff))
                     return FALSE;
             }
             else {
                 csum ^= csum >> 16;
 
-                if (*dp++ != (csum & 0xff) || *dp++ != ((csum >> 8) & 0xff))
+                if (*dp != (csum & 0xff) || dp[1] != ((csum >> 8) & 0xff))
                     return FALSE;
             }
 
