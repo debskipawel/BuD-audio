@@ -9,7 +9,7 @@ int main()
 	
 	BuD::Audio::AudioSystem::SetActiveDevice(devices[0]);
 
-	std::filesystem::path radioheadPath = "..\\radiohead.wv";
+	std::filesystem::path radioheadPath = "..\\radiohead.mp3";
 
 	std::cout << "Loading file \"" + radioheadPath.filename().string() << "\"" << std::endl;
 	auto sound = BuD::Audio::AudioSystem::Load(radioheadPath);

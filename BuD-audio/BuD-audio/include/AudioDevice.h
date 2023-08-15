@@ -10,7 +10,7 @@ namespace BuD
 		class AudioDevice
 		{
 		public:
-			AudioDevice() : m_Id(-1), m_NumChannels(-1), m_Name("") {}
+			AudioDevice() : AudioDevice("", -1, -1) {}
 
 			std::string Name() const { return m_Name; }
 

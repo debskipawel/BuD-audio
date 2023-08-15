@@ -106,7 +106,7 @@ namespace BuD::Audio
 	
 	void AudioSystem::Play(std::shared_ptr<SoundEffect> sound)
 	{
-		if (!s_Audio || s_ActiveDevice == AudioDevice::INVALID)
+		if (!s_Audio || s_ActiveDevice.Id() == AudioDevice::INVALID.Id())
 		{
 			std::cerr << "[ERROR] No default playback device has been set." << std::endl;
 			return;
